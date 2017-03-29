@@ -3,6 +3,8 @@
 
 #include <vector.h>
 #include <pixelrain.h>
+#include <color.h>
+
 #include <math.h>
 #include <random>
 #include <iostream>
@@ -102,6 +104,17 @@ public:
 	Vect4f operator() (const Type_Color3& color) const
 	{
 		return Vect4f(color, 1);
+	}
+};
+
+struct ConverterHCL
+{
+public:
+	Vect4f operator() (const Type_Color3& color) const
+	{
+		Type_Color3 c(color);
+		if (c.x < 0) c.x += 1; //hue
+		return Vect4f(ColorConverter::HCLtoRGB(c), 1);
 	}
 };
 

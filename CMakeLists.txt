@@ -19,7 +19,8 @@ set(SOURCE_FILES
 set(HEADER_FILES 
 	include/pixelrain.h 
 	include/pixelrain_defaults.h
-	include/vector.h)
+	include/vector.h
+	include/color.h)
 source_group("Headers" FILES ${HEADER_FILES})
 source_group("Soil" FILES ${SOIL_SOURCES} ${SOIL_HEADERS})
 add_executable(pixelrain 
