@@ -37,11 +37,28 @@ int main(int argc, char* argv[])
 	//create a mixture for an autumn effect
 	typedef PixelRain<Type_Color3, HueComparator_Color3, ConverterHCL, MixtureRandom_Color3> PixelRain_t;
 	MixtureRandom_Color3 mr;
+#if 0
+	//earth
 	mr.addGenerator(Random_Color3(0.25f, 0.4f, 0.6f, 0.9f, 0.05f, 0.9f), 2); //green
 	mr.addGenerator(Random_Color3(0.0f, 0.1f, 0.6f, 0.9f, 0.05f, 0.6f), 0.5f); //brown/red
 	mr.addGenerator(Random_Color3(0.1f, 0.2f, 0.3f, 0.9f, 0.05f, 0.9f), 1); //yellow
+#elif 0
+	//air
+	mr.addGenerator(Random_Color3(0.6f, 0.7f, 0.1f, 0.5f, 0.5f, 0.9f), 2); //blue
+	mr.addGenerator(Random_Color3(0.0f, 1.0f, 0.1f, 0.2f, 0.7f, 0.9f), 1); //white
+	mr.addGenerator(Random_Color3(0.1f, 0.2f, 0.1f, 0.5f, 0.5f, 0.9f), 2); //yellow
+#elif 0
+	//water
+	mr.addGenerator(Random_Color3(0.6f, 0.7f, 0.4f, 0.8f, 0.5f, 0.9f), 2); //blue
+	mr.addGenerator(Random_Color3(0.5f, 0.6f, 0.4f, 0.8f, 0.5f, 0.7f), 0.5); //green
+	//mr.addGenerator(Random_Color3(0.6f, 0.65f, 0.8f, 0.9f, 0.4f, 0.6f), 0.3); //dark blue
+#elif 1
+	//fire
+	mr.addGenerator(Random_Color3(-0.05f, 0.05f, 0.7f, 0.9f, 0.2f, 0.7f), 2); //red
+	mr.addGenerator(Random_Color3(0.05f, 0.15f, 0.8f, 0.9f, 0.7f, 0.75f), 1); //yellow
+#endif
 	mr.normalize();
-	PixelRain_t pixelRain(500, 500, HueComparator_Color3(0.1f, 1, 0.2f), ConverterHCL(), mr);
+	PixelRain_t pixelRain(1000, 1000, HueComparator_Color3(2.0f, 5.0f, 0.3f), ConverterHCL(), mr);
 
 	//add seed in the middle
 	pixelRain.addSeed(pixelRain.getWidth()/6, pixelRain.getHeight()/6);
@@ -54,5 +71,5 @@ int main(int argc, char* argv[])
 	pixelRain.compute(CoutProgressListener());
 
 	//save
-	saveResult(&pixelRain, "test1.bmp");
+	saveResult(&pixelRain, "test.bmp");
 }
