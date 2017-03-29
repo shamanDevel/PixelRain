@@ -23,16 +23,16 @@ void saveResult(const PixelRain* pixelRain, const std::string& fileName)
 int main(int argc, char* argv[])
 {
 	//create a rgb version
-	//typedef PixelRain<Type_Color3, Comparator_Color3, ConverterRGB, Random_Color3> PixelRain_t;
-	//PixelRain_t pixelRain(500, 500, Comparator_Color3(), ConverterRGB(), Random_Color3(0, 1, 0, 0.2f, 0, 0.2f));
+	typedef PixelRain<Type_Color3, Comparator_Color3, ConverterRGB, Random_Color3> PixelRain_t;
+	PixelRain_t pixelRain(500, 500, Comparator_Color3(), ConverterRGB(), Random_Color3(0, 1, 0, 0.2f, 0, 0.2f));
 
 	//create a hcl version, settings are for a 'fire'-effect
-	typedef PixelRain<Type_Color3, Comparator_Color3, ConverterHCL, Random_Color3> PixelRain_t;
-	PixelRain_t pixelRain(4000, 10000, Comparator_Color3(6, 1, 0.2f), ConverterHCL(), Random_Color3(-0.05f, 0.1f, 0.6f, 0.9f, 0.2f, 1.0f));
+	//typedef PixelRain<Type_Color3, Comparator_Color3, ConverterHCL, Random_Color3> PixelRain_t;
+	//PixelRain_t pixelRain(2000, 5000, Comparator_Color3(6, 1, 0.2f), ConverterHCL(), Random_Color3(-0.05f, 0.1f, 0.6f, 0.9f, 0.05f, 1.0f));
 
 	//create a hcl version, settings are for a green/blue-effect
 	//typedef PixelRain<Type_Color3, Comparator_Color3, ConverterHCL, Random_Color3> PixelRain_t;
-	//PixelRain_t pixelRain(500, 500, Comparator_Color3(1.5f, 1, 0.2f), ConverterHCL(), Random_Color3(0.35f, 0.65f, 0.6f, 0.9f, 0.05f, 0.9f));
+	//PixelRain_t pixelRain(2000, 5000, Comparator_Color3(1.5f, 1, 0.2f), ConverterHCL(), Random_Color3(0.35f, 0.65f, 0.6f, 0.9f, 0.05f, 0.9f));
 
 	//add seed in the middle
 	pixelRain.addSeed(pixelRain.getWidth()/2, pixelRain.getHeight()/2);
@@ -41,5 +41,5 @@ int main(int argc, char* argv[])
 	pixelRain.compute(CoutProgressListener());
 
 	//save
-	saveResult(&pixelRain, "bigfire.bmp");
+	saveResult(&pixelRain, "test.bmp");
 }
