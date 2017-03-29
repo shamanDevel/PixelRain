@@ -8,6 +8,9 @@
 #include <math.h>
 #include <random>
 #include <iostream>
+#include <vector>
+#include <algorithm>
+#include <chrono>
 
 /// -----------------
 /// DATATYPES
@@ -49,9 +52,46 @@ public:
 };
 
 /**
- * \brief the default comparator for three-component color types
- */
+* \brief the default comparator for three-component color types.
+*/
 typedef ScalingVect3Comparator<float> Comparator_Color3;
+
+template<typename ScalarT>
+struct ScalingHueVect3Comparator
+{
+private:
+	const ScalarT scaleX_;
+	const ScalarT scaleY_;
+	const ScalarT scaleZ_;
+
+public:
+	ScalingHueVect3Comparator(ScalarT scaleX, ScalarT scaleY, ScalarT scaleZ)
+		: scaleX_(scaleX), scaleY_(scaleY), scaleZ_(scaleZ)
+	{
+	}
+	ScalingHueVect3Comparator()
+		: ScalingHueVect3Comparator(1, 1, 1)
+	{
+	}
+
+	float operator() (const Vect<3, ScalarT>& c1, const Vect<3, ScalarT>& c2) const
+	{
+		double v = 0;
+		v += scaleX_ * std::min({
+			(c1.x - c2.x) * (c1.x - c2.x),
+			(c1.x - c2.x + 1) * (c1.x - c2.x + 1),
+			(c1.x - c2.x - 1) * (c1.x - c2.x - 1) });
+		v += scaleY_ * (c1.y - c2.y) * (c1.y - c2.y);
+		v += scaleZ_ * (c1.z - c2.z) * (c1.z - c2.z);
+		return sqrtf((float)v);
+	}
+};
+
+/**
+ * \brief the default comparator for three-component color types where the first component represents hue.
+ * Hue needs special treatment: it is periodic. This means, the difference between hue 0.1 and hue 0.9 is not 0.8 but 0.2.
+ */
+typedef ScalingHueVect3Comparator<float> HueComparator_Color3;
 
 
 /// ------------------
@@ -61,6 +101,9 @@ typedef ScalingVect3Comparator<float> Comparator_Color3;
 template<typename ScalarT>
 struct Vect3RandomGenerator
 {
+public:
+	typedef Vect<3, ScalarT> pixel_t;
+
 private:
 	std::default_random_engine engine_;
 	std::uniform_real_distribution<ScalarT> distrX_;
@@ -69,19 +112,22 @@ private:
 
 public:
 	Vect3RandomGenerator(ScalarT minX, ScalarT maxX, ScalarT minY, ScalarT maxY, ScalarT minZ, ScalarT maxZ)
-		: distrX_(minX, maxX), distrY_(minY, maxY), distrZ_(minZ, maxZ)
+		: engine_(std::chrono::system_clock::now().time_since_epoch().count())
+		, distrX_(minX, maxX), distrY_(minY, maxY), distrZ_(minZ, maxZ)
 	{ }
 	Vect3RandomGenerator()
 		: Vect3RandomGenerator(0, 1, 0, 1, 0, 1)
 	{ }
 
-	Vect<3, ScalarT> operator() ()
+	pixel_t operator() ()
 	{
-		return Vect<3, ScalarT>(
+		Vect<3, ScalarT> v(
 			distrX_(engine_),
 			distrY_(engine_),
 			distrZ_(engine_)
 		);
+		if (v.x < 0) v.x += 1; //hue
+		return v;
 	}
 };
 
@@ -90,6 +136,68 @@ public:
  */
 typedef Vect3RandomGenerator<float> Random_Color3;
 
+/**
+ * \brief Computes a mixture of different random generators.
+ *	Add generators with addGenerator(generator, weight).
+ *	After all generators were added, normalize the weights with normalize().
+ *	Only after then can this generator be used
+ * \tparam T the random generators
+ */
+template<typename T>
+class MixtureRandomGenerator
+{
+public:
+	typedef typename T::pixel_t pixel_t;
+
+private:
+	std::vector<T> generators_;
+	std::vector<float> weights_;
+	std::default_random_engine engine_;
+	std::uniform_real_distribution<float> distribution_;
+
+public:
+	MixtureRandomGenerator() 
+		: engine_(std::chrono::system_clock::now().time_since_epoch().count())
+	{}
+
+	void addGenerator(const T& generator, float weight)
+	{
+		generators_.push_back(generator);
+		weights_.push_back(weight);
+	}
+
+	void normalize()
+	{
+		assert(!weights_.empty());
+		float sum = 0;
+		for (float w : weights_) sum += w;
+		float factor = 1 / sum;
+		sum = 0;
+		for (size_t i = 0; i < weights_.size(); ++i)
+		{
+			weights_[i] = sum + weights_[i] * factor;
+			sum = weights_[i];
+		}
+	}
+
+	pixel_t operator() ()
+	{
+		float f = distribution_(engine_);
+		for (size_t i = 0; i < weights_.size()-1; ++i)
+		{
+			if (f < weights_[i])
+			{
+				return generators_[i]();
+			}
+		}
+		return generators_[weights_.size() - 1]();
+	}
+};
+
+/**
+ * \brief A mixture of Random_Color3 generators
+ */
+typedef MixtureRandomGenerator<Random_Color3> MixtureRandom_Color3;
 
 /// -------------------
 /// CONVERTERS
